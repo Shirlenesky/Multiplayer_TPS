@@ -16,9 +16,9 @@ public:
 	ABlasterCharacter();
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void PostInitializeComponents() override;
 
 protected:
 	// Called when the game starts or when spawned
@@ -28,6 +28,8 @@ protected:
 	void MoveRight(float Value);
 	void Turn(float Value);
 	void LookUp(float Value);
+	void EquipButtonPressed();
+	
 private:
 	UPROPERTY(VisibleAnyWhere, Category = Camera)
 	class USpringArmComponent* CameraBoom;
@@ -37,7 +39,16 @@ private:
 
 	UPROPERTY(EditAnyWhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	class UWidgetComponent* OverheadWidget;
+
+	UPROPERTY(ReplicatedUsing = OnRep_OverlappingWeapon)
+	class AWeapon* OverlappingWeapon;
+
+	UFUNCTION()
+	void OnRep_OverlappingWeapon(AWeapon* LastWeapon);//传参记录上一次，那么当没有触发武器，直接传入nullptr也会调用触发
+
+	UPROPERTY(VisibleAnyWhere)
+	class UCombatComponent* Combat;
 public:	
-	
+	void SetOverlappingWeapon(AWeapon* Weapon);
 
 };
