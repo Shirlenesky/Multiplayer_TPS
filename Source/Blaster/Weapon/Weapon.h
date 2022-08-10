@@ -26,6 +26,7 @@ public:
 	AWeapon();
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void ShowPickupWidget(bool bShowWidget);
 
 protected:
@@ -57,12 +58,15 @@ private:
 	UPROPERTY(VisibleAnyWhere, Category = "Weapon Properties")
 	class USphereComponent* AreaSphere;//A Sphere range to detect the presence of weapons
 
-	UPROPERTY(VisibleAnyWhere, Category = "Weapon Properties")
+	UPROPERTY(ReplicatedUsing = OnRep_WeaponState, VisibleAnywhere, Category = "Weapon Properties")
 	EWeaponState WeaponState;
+
+	UFUNCTION()
+	void OnRep_WeaponState();
 
 	UPROPERTY(VisibleAnyWhere, Category = "Weapon Properties")
 	class UWidgetComponent* PickupWidget;
 public:	
-	FORCEINLINE void SetWeaponState(EWeaponState State) { WeaponState = State; }
-
+	void SetWeaponState(EWeaponState State);
+	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 };
