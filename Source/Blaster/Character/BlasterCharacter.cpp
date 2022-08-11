@@ -34,7 +34,7 @@ ABlasterCharacter::ABlasterCharacter()
 	Combat = CreateDefaultSubobject<UCombatComponent>(TEXT("Combat"));
 	Combat->SetIsReplicated(true);
 
-	//GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
+	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 }
 
 void ABlasterCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -163,12 +163,18 @@ void ABlasterCharacter::CrouchButtonPressed()
 
 void ABlasterCharacter::AimButtonPressed()
 {
-
+	if (Combat)
+	{
+		Combat->SetAiming(true);
+	}
 }
 
 void ABlasterCharacter::AimButtonReleased()
 {
-
+	if (Combat)
+	{
+		Combat->SetAiming(false);
+	}
 }
 
 
@@ -207,8 +213,7 @@ bool ABlasterCharacter::IsWeaponEquipped()
 	return (Combat && Combat->EquippedWeapon);
 }
 
-
-
-
-
-
+bool ABlasterCharacter::IsAiming()
+{
+	return (Combat && Combat->bAiming);
+}
