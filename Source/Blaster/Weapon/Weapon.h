@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Animation/AnimationAsset.h"
 #include "Weapon.generated.h"
+
 
 UENUM(BlueprintType)
 enum class EWeaponState : uint8
@@ -28,6 +30,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void ShowPickupWidget(bool bShowWidget);
+	void Fire();
 
 protected:
 	// Called when the game starts or when spawned
@@ -66,7 +69,11 @@ private:
 
 	UPROPERTY(VisibleAnyWhere, Category = "Weapon Properties")
 	class UWidgetComponent* PickupWidget;
+
+	UPROPERTY(EditAnyWhere, Category = "Weapon Properties")
+	class UAnimationAsset* FireAnimation;
 public:	
 	void SetWeaponState(EWeaponState State);
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
+	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
 };
