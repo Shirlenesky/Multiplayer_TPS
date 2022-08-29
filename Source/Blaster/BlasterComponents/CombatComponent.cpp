@@ -7,7 +7,9 @@
 #include "Engine/SkeletalMeshSocket.h"
 #include "Net/UnrealNetwork.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Components/SphereComponent.h"
+#include "DrawDebugHelpers.h"
 // Sets default values for this component's properties
 UCombatComponent::UCombatComponent()
 {
@@ -48,26 +50,71 @@ void UCombatComponent::OnRep_EquippedWeapon()
 void UCombatComponent::FireButtonPressed(bool bPressed)
 {
 	bFireButtonPressed = bPressed;
+
 	if (bFireButtonPressed)
 	{
-		ServerFire();
+		FHitResult HitResult;
+		TraceUnderCrosshairs(HitResult);
+		ServerFire(HitResult.ImpactPoint);
+		
 	}
 
 }
 
-void UCombatComponent::MulticastFire_Implementation()
+void UCombatComponent::TraceUnderCrosshairs(FHitResult& TraceHitResult)
+{
+	FVector2D ViewportSize;
+	if (GEngine && GEngine->GameViewport)
+	{
+		GEngine->GameViewport->GetViewportSize(ViewportSize);
+	}
+
+	FVector2D CrosshairLocation(ViewportSize.X / 2.f, ViewportSize.Y / 2.f);
+	FVector CrosshairWorldPosition;
+	FVector CrosshairWorldDirection;
+	bool bScreenToWorld = UGameplayStatics::DeprojectScreenToWorld(
+		UGameplayStatics::GetPlayerController(this, 0),
+		CrosshairLocation,
+		CrosshairWorldPosition,
+		CrosshairWorldDirection
+	);
+
+	if (bScreenToWorld)
+	{
+		FVector Start = CrosshairWorldPosition;
+		FVector End = Start + CrosshairWorldDirection * TRACE_LENGTH;
+
+		GetWorld()->LineTraceSingleByChannel(
+			TraceHitResult,
+			Start,
+			End,
+			ECollisionChannel::ECC_Visibility
+		);
+	}
+	
+	
+}
+
+void UCombatComponent::ServerFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
+{
+	MulticastFire(TraceHitTarget);
+	
+}
+
+void UCombatComponent::MulticastFire_Implementation(const FVector_NetQuantize& TraceHitTarget)
 {
 	if (EquippedWeapon == nullptr)	return;
 	if (Character)
 	{
-		EquippedWeapon->Fire();
+		EquippedWeapon->Fire(TraceHitTarget);
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(0, 5.0f, FColor::Yellow, TEXT("ServerFire_Implementation"));
+		}
 	}
 }
 
-void UCombatComponent::ServerFire_Implementation()
-{
-	MulticastFire();
-}
+
 
 
 void UCombatComponent::SetAiming(bool bIsAiming)
@@ -93,9 +140,16 @@ void UCombatComponent::ServerSetAiming_Implementation(bool bIsAiming)
 void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	/*FHitResult HitResult;
+	TraceUnderCrosshairs(HitResult);
+	DrawDebugSphere(
+		GetWorld(),
+		HitResult.ImpactPoint,
+		12.f,
+		12.f,
+		FColor::Red
+	);*/
 }
-
-
 
 void UCombatComponent::EquipWeapon(AWeapon* WeaponToEquip)
 {
