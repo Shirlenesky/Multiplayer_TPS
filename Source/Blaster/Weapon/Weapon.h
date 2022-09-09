@@ -23,8 +23,8 @@ UCLASS()
 class BLASTER_API AWeapon : public AActor
 {
 	GENERATED_BODY()
-	
-public:	
+
+public:
 	// Sets default values for this actor's properties
 	AWeapon();
 	// Called every frame
@@ -33,22 +33,47 @@ public:
 	virtual void ShowPickupWidget(bool bShowWidget);
 	virtual void Fire(const FVector& HitTarget);
 
+	//Texture for the weapon crosshairs;
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+		class UTexture2D* CrosshairsCenter;
+
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+		UTexture2D* CrosshairsLeft;
+
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+		UTexture2D* CrosshairsRight;
+
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+		UTexture2D* CrosshairsTop;
+
+	UPROPERTY(EditAnywhere, Category = Crosshairs)
+		UTexture2D* CrosshairsBottom;
+
+	/**
+	* Zoom FOV While Aiming
+	*/
+	UPROPERTY(EditAnywhere)
+		float ZoomedFOV = 30.f;
+
+	UPROPERTY(EditAnywhere)
+		float ZoomInterpSpeed = 20.f;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	UFUNCTION()
-	virtual void OnSphereOverlap(
-		UPrimitiveComponent* OverlapComponent, 
-		AActor* OtherActor,
-		UPrimitiveComponent* OtherComp,
-		int32 OtherBodyIndex,
-		bool bFromSweep,
-		const FHitResult& SweepResulst
+		virtual void OnSphereOverlap(
+			UPrimitiveComponent* OverlapComponent,
+			AActor* OtherActor,
+			UPrimitiveComponent* OtherComp,
+			int32 OtherBodyIndex,
+			bool bFromSweep,
+			const FHitResult& SweepResulst
 		);
 
 	UFUNCTION()
-	void OnSphereEndOverlap(
+		void OnSphereEndOverlap(
 			UPrimitiveComponent* OverlapComponent,
 			AActor* OtherActor,
 			UPrimitiveComponent* OtherComp,
@@ -57,28 +82,32 @@ protected:
 
 private:
 	UPROPERTY(VisibleAnyWhere, Category = "Weapon Properties")
-	USkeletalMeshComponent* WeaponMesh;
+		USkeletalMeshComponent* WeaponMesh;
 
 	UPROPERTY(VisibleAnyWhere, Category = "Weapon Properties")
-	class USphereComponent* AreaSphere;//A Sphere range to detect the presence of weapons
+		class USphereComponent* AreaSphere;//A Sphere range to detect the presence of weapons
 
 	UPROPERTY(ReplicatedUsing = OnRep_WeaponState, VisibleAnywhere, Category = "Weapon Properties")
-	EWeaponState WeaponState;
+		EWeaponState WeaponState;
 
 	UFUNCTION()
-	void OnRep_WeaponState();
+		void OnRep_WeaponState();
 
 	UPROPERTY(VisibleAnywhere, Category = "Weapon Properties")
-	class UWidgetComponent* PickupWidget;
+		class UWidgetComponent* PickupWidget;
 
 	UPROPERTY(EditAnywhere, Category = "Weapon Properties")
-	class UAnimationAsset* FireAnimation;
+		class UAnimationAsset* FireAnimation;
 
 	UPROPERTY(EditAnywhere)
-	TSubclassOf<class ACasing> CasingClass;
-public:	
+		TSubclassOf<class ACasing> CasingClass;
+
+
+public:
 	void SetWeaponState(EWeaponState State);
 	FORCEINLINE USphereComponent* GetAreaSphere() const { return AreaSphere; }
 	FORCEINLINE USkeletalMeshComponent* GetWeaponMesh() const { return WeaponMesh; }
+	FORCEINLINE float GetZoomedFOV() const {return ZoomedFOV;}
+	FORCEINLINE float GetZoomInterpSpeed() const{ return ZoomInterpSpeed; }
 };
  
